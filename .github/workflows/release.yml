@@ -27,8 +27,10 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release:
+  public-release:
     runs-on: ubuntu-latest
+    environment: production
+    if: ${{ inputs.is_private_release == false }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,7 +40,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install dependencies
         run: npm ci
@@ -47,18 +49,45 @@ jobs:
         if: ${{ inputs.skip_tests == false }}
         run: npm test
 
-      - name: Create Release Pull Request
-        uses: changesets/action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Version packages (Public)
+      - name: Version packages 
         if: inputs.with_version_update
         uses: changesets/action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Version packages (Private)
+      - name: Publish
+        uses: changesets/action@v1
+        with:
+          publish: npm run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+
+  private-release:
+    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
+    environment: production
+    if: ${{ inputs.is_private_release == true }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        if: ${{ inputs.skip_tests == false }}
+        run: npm test
+
+      - name: Version packages
         if: inputs.is_private_release
         uses: changesets/action@v1
         with:
@@ -66,16 +95,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish (Public)
-        uses: changesets/action@v1
-        if: ${{ inputs.is_private_release != false }}
-        with:
-          publish: npm run release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish (Private)
+      - name: Publish
         if: inputs.is_private_release
         uses: changesets/action@v1
         with:
