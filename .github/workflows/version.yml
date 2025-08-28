@@ -4,10 +4,17 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      private:
+        description: "Do a private release"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   public-version:
-    name: Release
+    name: Update version
     runs-on: ubuntu-latest
     concurrency: ${{ github.workflow }}-${{ github.ref }}-public
     steps:
@@ -31,7 +38,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   private-version:
-    name: Release
+    name: Update version (private)
     runs-on: ubuntu-latest
     concurrency: ${{ github.workflow }}-${{ github.ref }}-private
     steps:
