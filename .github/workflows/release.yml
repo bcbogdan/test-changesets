@@ -1,44 +1,85 @@
-name: Release
+name: Release Packages
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to release from"
+        required: false
+        default: "main"
+        type: string
+      skip_tests:
+        description: "Skip running tests"
+        required: false
+        default: false
+        type: boolean
+      with_version_update:
+        description: "Version packages"
+        required: false
+        default: false
+        type: boolean
+      is_private_release:
+        description: "Do a private release"
+        required: false
+        default: false
+        type: boolean
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   release:
-    name: Release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup pnpm 8
-        uses: pnpm/action-setup@v3
         with:
-          version: 8
+          ref: ${{ inputs.branch }}
 
-      - name: Setup Node.js 20.x
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 18
 
-      - name: Install Dependencies
-        run: pnpm i
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Create Release Pull Request or Publish to npm
-        id: changesets
+      - name: Run tests
+        if: ${{ steps.defaults.outputs.skip_tests != 'false' }}
+        run: npm test
+
+      - name: Create Release Pull Request
+        uses: changesets/action@v1
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+
+      - name: Version packages (Public)
+        if: inputs.with_version_update
+        uses: changesets/action@v1
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+
+      - name: Version packages (Private)
+        if: inputs.is_private_release
         uses: changesets/action@v1
         with:
-          # This expects you to have a script called release which does a build for your packages and calls changeset publish
-          publish: pnpm release
+          version: npm run version:private
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TOKEN: ${{ secrets.TOKEN }}
+
+      - name: Publish (Public)
+        uses: changesets/action@v1
+        if: !inputs.is_private_release
+        with:
+          publish: npm run release
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Send a Slack notification if a publish happens
-        if: steps.changesets.outputs.published == 'true'
-        # You can do something when a publish happens.
-        run: my-slack-bot send-notification --message "A new version of ${GITHUB_REPOSITORY} was published!"
+      - name: Publish (Private)
+        if: inputs.is_private_release
+        uses: changesets/action@v1
+        with:
+          publish: npm run release:private
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
