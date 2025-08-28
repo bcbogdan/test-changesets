@@ -19,11 +19,10 @@ on:
         default: false
         type: boolean
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
-
 jobs:
   public-release:
     runs-on: ubuntu-latest
+    concurrency: ${{ github.workflow }}-${{ github.ref }}-public
     environment: production
     if: ${{ inputs.private == false }}
     steps:
@@ -54,6 +53,7 @@ jobs:
 
   private-release:
     runs-on: ubuntu-latest
+    concurrency: ${{ github.workflow }}-${{ github.ref }}-private
     environment: staging
     if: ${{ inputs.private == true }}
     steps:
@@ -73,14 +73,6 @@ jobs:
       - name: Run tests
         if: ${{ inputs.skip_tests == false }}
         run: npm test
-
-      - name: Version packages
-        if: inputs.is_private_release
-        uses: changesets/action@v1
-        with:
-          version: npm run version:private
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish
         if: inputs.is_private_release

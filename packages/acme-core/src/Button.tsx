@@ -3,7 +3,7 @@ export interface ButtonProps {
 }
 
 export function Button(props: ButtonProps) {
-  return <button className="test-2312">{props.children}</button>;
+  return <button className="test-23121">{props.children}</button>;
 }
 
 Button.displayName = "Button";
