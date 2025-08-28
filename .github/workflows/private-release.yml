@@ -48,6 +48,8 @@ jobs:
 
       - name: Commit and push changes
         run: |
+          git config --global user.email "bot@supertokens.com"
+          git config --global user.name "SuperTokens Bot"
           git add .
           git commit -m "Update package versions"
           git push origin ${{ steps.create-branch.outputs.branch-name }}
