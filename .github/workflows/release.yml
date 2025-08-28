@@ -4,21 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: "Branch to release from"
+        description: "Release branch"
         required: false
         default: "main"
         type: string
       skip_tests:
-        description: "Skip running tests"
+        description: "Skip tests"
         required: false
         default: false
         type: boolean
-      with_version_update:
-        description: "Version packages"
-        required: false
-        default: false
-        type: boolean
-      is_private_release:
+      private:
         description: "Do a private release"
         required: false
         default: false
@@ -30,7 +25,7 @@ jobs:
   public-release:
     runs-on: ubuntu-latest
     environment: production
-    if: ${{ inputs.is_private_release == false }}
+    if: ${{ inputs.private == false }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,12 +44,6 @@ jobs:
         if: ${{ inputs.skip_tests == false }}
         run: npm test
 
-      - name: Version packages
-        if: inputs.with_version_update
-        uses: changesets/action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Publish
         uses: changesets/action@v1
         with:
@@ -66,7 +55,7 @@ jobs:
   private-release:
     runs-on: ubuntu-latest
     environment: staging
-    if: ${{ inputs.is_private_release == true }}
+    if: ${{ inputs.private == true }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

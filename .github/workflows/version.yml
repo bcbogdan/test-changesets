@@ -5,12 +5,11 @@ on:
     branches:
       - main
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
-
 jobs:
-  release:
+  public-version:
     name: Release
     runs-on: ubuntu-latest
+    concurrency: ${{ github.workflow }}-${{ github.ref }}-public
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -18,12 +17,39 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install Dependencies
         run: npm ci
 
       - name: Create Release Pull Request
         uses: changesets/action@v1
+        with:
+          version: npm run version
+          title: "Add package versions"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  private-version:
+    name: Release
+    runs-on: ubuntu-latest
+    concurrency: ${{ github.workflow }}-${{ github.ref }}-private
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Create Release Pull Request
+        uses: changesets/action@v1
+        with:
+          version: npm run version:private
+          title: "Add private package versions"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
