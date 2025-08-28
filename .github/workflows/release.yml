@@ -49,7 +49,7 @@ jobs:
         if: ${{ inputs.skip_tests == false }}
         run: npm test
 
-      - name: Version packages 
+      - name: Version packages
         if: inputs.with_version_update
         uses: changesets/action@v1
         env:
@@ -63,9 +63,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-
   private-release:
-    runs-on: ubuntu-latest
     runs-on: ubuntu-latest
     environment: production
     if: ${{ inputs.is_private_release == true }}
