@@ -1,22 +1,16 @@
-name: Version Packages
+name: Update package versions
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
-    inputs:
-      private:
-        description: "Do a private release"
-        required: false
-        default: false
-        type: boolean
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}-release
 
 jobs:
-  public-version:
+  version:
     name: Update version
     runs-on: ubuntu-latest
-    concurrency: ${{ github.workflow }}-${{ github.ref }}-public
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -33,30 +27,6 @@ jobs:
         uses: changesets/action@v1
         with:
           version: npm run version
-          title: "Add package versions"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  private-version:
-    name: Update version (private)
-    runs-on: ubuntu-latest
-    concurrency: ${{ github.workflow }}-${{ github.ref }}-private
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Create Release Pull Request
-        uses: changesets/action@v1
-        with:
-          version: npm run version:private
-          title: "Add private package versions"
+          title: "Update package versions"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
