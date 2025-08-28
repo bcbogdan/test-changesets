@@ -65,7 +65,7 @@ jobs:
 
   private-release:
     runs-on: ubuntu-latest
-    environment: production
+    environment: staging
     if: ${{ inputs.is_private_release == true }}
     steps:
       - name: Checkout
