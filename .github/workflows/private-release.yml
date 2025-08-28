@@ -49,7 +49,6 @@ jobs:
         run: npm run build
 
       - name: Publish
-        if: inputs.is_private_release
         uses: changesets/action@v1
         with:
           version: npm run version:private
