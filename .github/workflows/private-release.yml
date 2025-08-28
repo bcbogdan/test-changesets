@@ -27,11 +27,22 @@ jobs:
           ref: ${{ inputs.branch }}
 
       - name: Create beta branch
+        id: create-branch
         run: |
           DATETIME=$(date +%Y%m%d%H%M%S)
           BRANCH_NAME="beta-$DATETIME"
           git checkout -b $BRANCH_NAME
           git push origin $BRANCH_NAME
+          echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: Create beta version
+        run: npm run version:private
+
+      - name: Commit and push changes
+        run: |
+          git add .
+          git commit -m "Update package versions"
+          git push origin ${{ steps.create-branch.outputs.branch-name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
