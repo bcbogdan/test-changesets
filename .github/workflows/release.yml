@@ -44,19 +44,19 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        if: ${{ steps.defaults.outputs.skip_tests != 'false' }}
+        if: ${{ inputs.skip_tests != false }}
         run: npm test
 
       - name: Create Release Pull Request
         uses: changesets/action@v1
         env:
-          TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Version packages (Public)
         if: inputs.with_version_update
         uses: changesets/action@v1
         env:
-          TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Version packages (Private)
         if: inputs.is_private_release
@@ -64,15 +64,15 @@ jobs:
         with:
           version: npm run version:private
         env:
-          TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish (Public)
         uses: changesets/action@v1
-        if: !inputs.is_private_release
+        if: ${{ inputs.is_private_release != false }}
         with:
           publish: npm run release
         env:
-          TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish (Private)
@@ -81,5 +81,5 @@ jobs:
         with:
           publish: npm run release:private
         env:
-          TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
