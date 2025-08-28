@@ -44,7 +44,7 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        if: ${{ inputs.skip_tests != false }}
+        if: ${{ inputs.skip_tests == false }}
         run: npm test
 
       - name: Create Release Pull Request
