@@ -35,6 +35,14 @@ jobs:
           git push origin $BRANCH_NAME
           echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Create beta version
         run: npm run version:private
 
@@ -43,14 +51,6 @@ jobs:
           git add .
           git commit -m "Update package versions"
           git push origin ${{ steps.create-branch.outputs.branch-name }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm ci
 
       - name: Run tests
         if: ${{ inputs.skip_tests == false }}
