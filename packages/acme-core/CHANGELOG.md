@@ -1,5 +1,12 @@
 # @acme/core
 
+## 0.0.0-beta-20250828171107
+
+### Minor Changes
+
+- df49573: fixed a bug
+- 8562280: bug fix fix
+
 ## 0.1.0
 
 ### Minor Changes
